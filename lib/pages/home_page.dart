@@ -1,4 +1,4 @@
-// lib/pages/home_page.dart
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -38,41 +38,65 @@ class _HomePageState extends State<HomePage> {
 
   void _rotateCounterClockwise() {
     setState(() {
+      // Normalize to positive rotation between 0 and 359
       _rotation = (_rotation - 90) % 360;
+      if (_rotation < 0) _rotation += 360;
     });
   }
 
   Future<void> _uploadImage() async {
-    if (_imageFile == null) return;
+    if (_imageFile == null || _isLoading) return;
     setState(() => _isLoading = true);
 
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://127.0.0.1:8000/upload-rotated'), // Change if needed
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'file',
-        _imageFile!.path,
-        filename: basename(_imageFile!.path),
-      ),
-    );
-
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
-
-    setState(() => _isLoading = false);
-
-    if (response.statusCode == 200) {
-      final html = response.body;
-      Navigator.push(
-        this.context,
-        MaterialPageRoute(builder: (context) => ResultPage(htmlContent: html)),
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://127.0.0.1:8000/upload-rotated'),
       );
-    } else {
-      ScaffoldMessenger.of(
-        this.context,
-      ).showSnackBar(const SnackBar(content: Text('Upload failed')));
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          _imageFile!.path,
+          filename: basename(_imageFile!.path),
+        ),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+
+        final imageUrl = jsonResponse["image_url"] as String?;
+        final vastuReport = jsonResponse["vastu_report"] as List?;
+
+        if (imageUrl == null || vastuReport == null) {
+          throw Exception("Invalid response from server");
+        }
+
+        print(context.runtimeType);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultPage(
+              imageUrl: 'http://127.0.0.1:8000$imageUrl',
+              vastuReport: List<Map<String, dynamic>>.from(vastuReport),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Upload failed')),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
@@ -85,7 +109,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             ElevatedButton(
-              onPressed: _pickImage,
+              onPressed: _isLoading ? null : _pickImage,
               child: const Text('Upload Image'),
             ),
             const SizedBox(height: 10),
@@ -108,19 +132,24 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    onPressed: _rotateCounterClockwise,
+                    onPressed: _isLoading ? null : _rotateCounterClockwise,
                     icon: const Icon(Icons.rotate_left),
                   ),
                   IconButton(
-                    onPressed: _rotateClockwise,
+                    onPressed: _isLoading ? null : _rotateClockwise,
                     icon: const Icon(Icons.rotate_right),
                   ),
                 ],
               ),
             ElevatedButton(
-              onPressed: _uploadImage,
+              onPressed:
+                  (_imageFile == null || _isLoading) ? null : _uploadImage,
               child: _isLoading
-                  ? const CircularProgressIndicator()
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('Analyze'),
             ),
           ],
