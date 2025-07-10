@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart';
 import '../widgets/cross_overlay.dart';
 import 'result_page.dart';
+import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,7 +40,6 @@ class _HomePageState extends State<HomePage> {
 
   void _rotateCounterClockwise() {
     setState(() {
-      // Normalize to positive rotation between 0 and 359
       _rotation = (_rotation - 90) % 360;
       if (_rotation < 0) _rotation += 360;
     });
@@ -49,6 +50,33 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = true);
 
     try {
+      // Decode image
+      final originalBytes = await _imageFile!.readAsBytes();
+      img.Image originalImage = img.decodeImage(originalBytes)!;
+
+      // Rotate
+      img.Image rotatedImage;
+      switch (_rotation) {
+        case 90:
+          rotatedImage = img.copyRotate(originalImage, angle: 90);
+          break;
+        case 180:
+          rotatedImage = img.copyRotate(originalImage, angle: 180);
+          break;
+        case 270:
+          rotatedImage = img.copyRotate(originalImage, angle: 270);
+          break;
+        default:
+          rotatedImage = originalImage;
+      }
+
+      // Save to temp file
+      final tempDir = await getTemporaryDirectory();
+      final rotatedFilePath = '${tempDir.path}/rotated_image.jpg';
+      final rotatedFile = File(rotatedFilePath)
+        ..writeAsBytesSync(img.encodeJpg(rotatedImage));
+
+      // Upload
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('http://127.0.0.1:8000/upload-rotated'),
@@ -56,8 +84,8 @@ class _HomePageState extends State<HomePage> {
       request.files.add(
         await http.MultipartFile.fromPath(
           'file',
-          _imageFile!.path,
-          filename: basename(_imageFile!.path),
+          rotatedFile.path,
+          filename: basename(rotatedFile.path),
         ),
       );
 
@@ -68,7 +96,6 @@ class _HomePageState extends State<HomePage> {
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
-
         final imageUrl = jsonResponse["image_url"] as String?;
         final vastuReport = jsonResponse["vastu_report"] as List?;
 
@@ -90,6 +117,9 @@ class _HomePageState extends State<HomePage> {
           const SnackBar(content: Text('Upload failed')),
         );
       }
+
+      // Optional cleanup
+      // await rotatedFile.delete();
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(this.context).showSnackBar(

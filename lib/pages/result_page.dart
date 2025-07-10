@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/cross_overlay.dart';
 
 class ResultPage extends StatelessWidget {
   final String imageUrl;
@@ -20,15 +21,28 @@ class ResultPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: Image.network(
-                imageUrl,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return const Center(child: CircularProgressIndicator());
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text("Failed to load image.");
-                },
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Text("Failed to load image.");
+                        },
+                      ),
+                    ),
+                    const CrossOverlay(),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),

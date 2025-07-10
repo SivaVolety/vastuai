@@ -24,6 +24,7 @@ class CrossOverlayPainter extends CustomPainter {
       ..color = Colors.black
       ..strokeWidth = 1;
 
+    // Draw cross lines
     canvas.drawLine(
       Offset(size.width / 2, 0),
       Offset(size.width / 2, size.height),
@@ -34,6 +35,47 @@ class CrossOverlayPainter extends CustomPainter {
       Offset(size.width, size.height / 2),
       paint,
     );
+
+    // Direction labels
+    final textPainter = (String text) {
+      final textStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+      );
+      final span = TextSpan(text: text, style: textStyle);
+      final tp = TextPainter(
+        text: span,
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      return tp;
+    };
+
+    const padding = 8.0;
+
+    // North (top center)
+    final northTp = textPainter('N');
+    northTp.paint(canvas, Offset((size.width - northTp.width) / 2, padding));
+
+    // East (right center)
+    final eastTp = textPainter('E');
+    eastTp.paint(
+        canvas,
+        Offset(size.width - eastTp.width - padding,
+            (size.height - eastTp.height) / 2));
+
+    // South (bottom center)
+    final southTp = textPainter('S');
+    southTp.paint(
+        canvas,
+        Offset((size.width - southTp.width) / 2,
+            size.height - southTp.height - padding));
+
+    // West (left center)
+    final westTp = textPainter('W');
+    westTp.paint(canvas, Offset(padding, (size.height - westTp.height) / 2));
   }
 
   @override
