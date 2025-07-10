@@ -76,10 +76,8 @@ class _HomePageState extends State<HomePage> {
           throw Exception("Invalid response from server");
         }
 
-        print(context.runtimeType);
-
         Navigator.push(
-          context,
+          this.context,
           MaterialPageRoute(
             builder: (context) => ResultPage(
               imageUrl: 'http://127.0.0.1:8000$imageUrl',
@@ -88,13 +86,13 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(this.context).showSnackBar(
           const SnackBar(content: Text('Upload failed')),
         );
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(this.context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
