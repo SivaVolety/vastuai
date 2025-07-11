@@ -134,53 +134,55 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(title: const Text('Floor Plan Analyzer')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: _isLoading ? null : _pickImage,
-              child: const Text('Upload Image'),
-            ),
-            const SizedBox(height: 10),
-            if (_imageFile != null)
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
+        child: Center(
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: _isLoading ? null : _pickImage,
+                child: const Text('Upload Image'),
+              ),
+              const SizedBox(height: 10),
+              if (_imageFile != null)
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Transform.rotate(
+                        angle: _rotation * math.pi / 180,
+                        child: Image.file(_imageFile!),
+                      ),
+                      const CrossOverlay(),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 10),
+              if (_imageFile != null)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Transform.rotate(
-                      angle: _rotation * math.pi / 180,
-                      child: Image.file(_imageFile!),
+                    IconButton(
+                      onPressed: _isLoading ? null : _rotateCounterClockwise,
+                      icon: const Icon(Icons.rotate_left),
                     ),
-                    const CrossOverlay(),
+                    IconButton(
+                      onPressed: _isLoading ? null : _rotateClockwise,
+                      icon: const Icon(Icons.rotate_right),
+                    ),
                   ],
                 ),
+              ElevatedButton(
+                onPressed:
+                    (_imageFile == null || _isLoading) ? null : _uploadImage,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Analyze'),
               ),
-            const SizedBox(height: 10),
-            if (_imageFile != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: _isLoading ? null : _rotateCounterClockwise,
-                    icon: const Icon(Icons.rotate_left),
-                  ),
-                  IconButton(
-                    onPressed: _isLoading ? null : _rotateClockwise,
-                    icon: const Icon(Icons.rotate_right),
-                  ),
-                ],
-              ),
-            ElevatedButton(
-              onPressed:
-                  (_imageFile == null || _isLoading) ? null : _uploadImage,
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Analyze'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

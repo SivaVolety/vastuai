@@ -77,7 +77,7 @@ class ResultPage extends StatelessWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
