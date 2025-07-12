@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import '../widgets/cross_overlay.dart';
 import 'result_page.dart';
-import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,27 +21,81 @@ class _HomePageState extends State<HomePage> {
   File? _imageFile;
   int _rotation = 0;
   bool _isLoading = false;
+  bool _showOverlay = true;
 
-  Future<void> _pickImage() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+  final TransformationController _transformationController =
+      TransformationController();
+  final GlobalKey _previewContainerKey = GlobalKey();
+  double _currentScale = 1.0;
+
+  Future<void> _selectImageSource() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a photo'),
+                onTap: () {
+                  Navigator.pop(this.context);
+                  _pickImageFromSource(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from gallery'),
+                onTap: () {
+                  Navigator.pop(this.context);
+                  _pickImageFromSource(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImageFromSource(ImageSource source) async {
+    final picked = await ImagePicker().pickImage(source: source);
     if (picked != null) {
       setState(() {
         _imageFile = File(picked.path);
         _rotation = 0;
+        _resetZoom();
       });
     }
   }
 
   void _rotateClockwise() {
     setState(() {
-      _rotation = (_rotation + 90) % 360;
+      _rotation = (_rotation + 30) % 360;
     });
   }
 
   void _rotateCounterClockwise() {
     setState(() {
-      _rotation = (_rotation - 90) % 360;
+      _rotation = (_rotation - 30) % 360;
       if (_rotation < 0) _rotation += 360;
+    });
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
+    _currentScale = 1.0;
+  }
+
+  void _toggleZoom(double factor) {
+    setState(() {
+      if (_currentScale <= 1.0) {
+        _currentScale = factor;
+      } else {
+        _currentScale = 1.0;
+      }
+      _transformationController.value = Matrix4.identity()
+        ..scale(_currentScale);
     });
   }
 
@@ -50,52 +104,39 @@ class _HomePageState extends State<HomePage> {
     setState(() => _isLoading = true);
 
     try {
-      // Decode image
-      final originalBytes = await _imageFile!.readAsBytes();
-      img.Image originalImage = img.decodeImage(originalBytes)!;
+      // Hide overlay
+      setState(() => _showOverlay = false);
+      await Future.delayed(const Duration(milliseconds: 100)); // ensure rebuild
 
-      // Rotate
-      img.Image rotatedImage;
-      switch (_rotation) {
-        case 90:
-          rotatedImage = img.copyRotate(originalImage, angle: 90);
-          break;
-        case 180:
-          rotatedImage = img.copyRotate(originalImage, angle: 180);
-          break;
-        case 270:
-          rotatedImage = img.copyRotate(originalImage, angle: 270);
-          break;
-        default:
-          rotatedImage = originalImage;
-      }
+      // Capture widget image
+      RenderRepaintBoundary boundary = _previewContainerKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
 
-      // Save to temp file
+      // Show overlay again
+      setState(() => _showOverlay = true);
+
+      // Save to file
       final tempDir = await getTemporaryDirectory();
-      final rotatedFilePath = '${tempDir.path}/rotated_image.jpg';
-      final rotatedFile = File(rotatedFilePath)
-        ..writeAsBytesSync(img.encodeJpg(rotatedImage));
+      final file = File('${tempDir.path}/transformed_image.png');
+      await file.writeAsBytes(pngBytes);
 
       // Upload
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://127.0.0.1:8000/upload-rotated'),
+        Uri.parse('http://192.168.0.79:8000/upload-rotated'),
       );
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'file',
-          rotatedFile.path,
-          filename: basename(rotatedFile.path),
-        ),
-      );
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
 
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      final response = await request.send();
+      final resBody = await http.Response.fromStream(response);
 
       setState(() => _isLoading = false);
 
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
+      if (resBody.statusCode == 200) {
+        final jsonResponse = json.decode(resBody.body);
         final imageUrl = jsonResponse["image_url"] as String?;
         final vastuReport = jsonResponse["vastu_report"] as List?;
 
@@ -107,25 +148,29 @@ class _HomePageState extends State<HomePage> {
           this.context,
           MaterialPageRoute(
             builder: (context) => ResultPage(
-              imageUrl: 'http://127.0.0.1:8000$imageUrl',
+              imageUrl: 'http://192.168.0.79:8000$imageUrl',
               vastuReport: List<Map<String, dynamic>>.from(vastuReport),
             ),
           ),
         );
       } else {
-        ScaffoldMessenger.of(this.context).showSnackBar(
-          const SnackBar(content: Text('Upload failed')),
-        );
+        throw Exception("Upload failed: ${resBody.statusCode}");
       }
-
-      // Optional cleanup
-      // await rotatedFile.delete();
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _showOverlay = true;
+      });
       ScaffoldMessenger.of(this.context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -138,7 +183,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               ElevatedButton(
-                onPressed: _isLoading ? null : _pickImage,
+                onPressed: _isLoading ? null : _selectImageSource,
                 child: const Text('Upload Image'),
               ),
               const SizedBox(height: 10),
@@ -147,11 +192,29 @@ class _HomePageState extends State<HomePage> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Transform.rotate(
-                        angle: _rotation * math.pi / 180,
-                        child: Image.file(_imageFile!),
+                      RepaintBoundary(
+                        key: _previewContainerKey,
+                        child: ClipRect(
+                          child: InteractiveViewer(
+                            transformationController: _transformationController,
+                            clipBehavior: Clip.none,
+                            panEnabled: true,
+                            minScale: 0.5,
+                            maxScale: 5.0,
+                            child: Center(
+                              child: GestureDetector(
+                                onDoubleTap: () => _toggleZoom(2.5),
+                                child: Transform.rotate(
+                                  angle: _rotation * math.pi / 180,
+                                  child: Image.file(_imageFile!),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      const CrossOverlay(),
+                      if (_showOverlay)
+                        IgnorePointer(child: const CrossOverlay()),
                     ],
                   ),
                 ),
@@ -167,6 +230,11 @@ class _HomePageState extends State<HomePage> {
                     IconButton(
                       onPressed: _isLoading ? null : _rotateClockwise,
                       icon: const Icon(Icons.rotate_right),
+                    ),
+                    IconButton(
+                      onPressed: _resetZoom,
+                      icon: const Icon(Icons.center_focus_strong),
+                      tooltip: 'Reset Zoom',
                     ),
                   ],
                 ),
