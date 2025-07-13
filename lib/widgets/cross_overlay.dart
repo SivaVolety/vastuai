@@ -37,7 +37,7 @@ class CrossOverlayPainter extends CustomPainter {
     );
 
     // Direction labels
-    final textPainter = (String text) {
+    textPainter(String text) {
       final textStyle = TextStyle(
         color: Colors.black,
         fontSize: 14,
@@ -51,7 +51,7 @@ class CrossOverlayPainter extends CustomPainter {
       );
       tp.layout();
       return tp;
-    };
+    }
 
     const padding = 8.0;
 
