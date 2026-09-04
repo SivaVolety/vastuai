@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import '../widgets/cross_overlay.dart';
+import 'dart:io';
 
 class ResultPage extends StatefulWidget {
   final String imageUrl;
   final List<Map<String, dynamic>> vastuReport;
+  final String? ruleSetName;
+  final bool showConfidence;
+  final String? localImagePath;
 
   const ResultPage({
     super.key,
     required this.imageUrl,
     required this.vastuReport,
+    this.ruleSetName,
+    this.showConfidence = false,
+    this.localImagePath,
   });
 
   @override
@@ -28,7 +35,7 @@ class _ResultPageState extends State<ResultPage> {
         _currentScale = 1.0;
       }
       _transformationController.value = Matrix4.identity()
-        ..scale(_currentScale);
+        ..scaleByDouble(_currentScale, _currentScale, _currentScale, 1.0);
     });
   }
 
@@ -62,7 +69,9 @@ class _ResultPageState extends State<ResultPage> {
                           panEnabled: true,
                           minScale: 0.5,
                           maxScale: 5.0,
-                          child: Image.network(
+                          child: widget.localImagePath != null
+                              ? Image.file(File(widget.localImagePath!), fit: BoxFit.contain)
+                              : Image.network(
                             widget.imageUrl,
                             fit: BoxFit.contain,
                             loadingBuilder: (context, child, progress) {
@@ -96,6 +105,7 @@ class _ResultPageState extends State<ResultPage> {
               'Vastu Compliance Report:',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
+            if (widget.ruleSetName != null) Text('Rule set: ${widget.ruleSetName}'),
             const Divider(),
             ...widget.vastuReport.map((item) {
               final isOk = item['vastu_ok'] as bool;
@@ -103,6 +113,10 @@ class _ResultPageState extends State<ResultPage> {
               final direction = item['direction'];
               final color = isOk ? Colors.green : Colors.red;
               final icon = isOk ? Icons.check_circle : Icons.cancel;
+              final confidence = item['confidence'];
+              final confidenceText = widget.showConfidence && confidence is num
+                  ? ' • ${(confidence * 100).round()}% confidence'
+                  : '';
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -112,7 +126,7 @@ class _ResultPageState extends State<ResultPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '$label – Direction: $direction',
+                        '${label.toString()} • $direction$confidenceText',
                         style: TextStyle(
                           fontSize: 16,
                           color: color,

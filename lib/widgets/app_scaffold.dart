@@ -20,6 +20,7 @@ class AppScaffold extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 24)),
             ),
             _drawerItem(context, Icons.home, 'Home', '/'),
+            _drawerItem(context, Icons.history, 'History', '/history'),
             _drawerItem(context, Icons.tune, 'Advanced', '/advanced'),
             _drawerItem(context, Icons.settings, 'Settings', '/settings'),
             _drawerItem(context, Icons.help_outline, 'Help', '/help'),
