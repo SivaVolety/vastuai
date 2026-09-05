@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/rule_storage.dart';
 
 class RuleSetProvider extends ChangeNotifier {
@@ -19,12 +20,18 @@ class RuleSetProvider extends ChangeNotifier {
 
   Future<void> load() async {
     _ruleSetNames = await RuleStorage.getRuleSetNames();
-    _selected ??= _ruleSetNames.isNotEmpty ? _ruleSetNames.first : null;
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('selected_rule_set');
+    _selected = saved != null && _ruleSetNames.contains(saved)
+        ? saved
+        : (_ruleSetNames.isNotEmpty ? _ruleSetNames.first : null);
     notifyListeners();
   }
 
-  void select(String name) {
+  Future<void> select(String name) async {
     _selected = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_rule_set', name);
     notifyListeners();
   }
 }

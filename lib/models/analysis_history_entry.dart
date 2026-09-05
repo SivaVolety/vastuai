@@ -50,6 +50,11 @@ class AnalysisHistoryEntry {
     );
   }
 
-  int get passedCount => report.where((item) => item['vastu_ok'] == true).length;
-  int get failedCount => report.where((item) => item['vastu_ok'] == false).length;
+  // A missing rule_applied field is legacy data and remains evaluated. An
+  // explicit false means the active rule set did not cover this label.
+  Iterable<Map<String, dynamic>> get _evaluatedReport =>
+      report.where((item) => item['rule_applied'] != false);
+
+  int get passedCount => _evaluatedReport.where((item) => item['vastu_ok'] == true).length;
+  int get failedCount => _evaluatedReport.where((item) => item['vastu_ok'] == false).length;
 }

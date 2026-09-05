@@ -90,12 +90,12 @@ Verify the container with `curl http://localhost:8000/health`. The image runs CP
 ```json
 {
   "image_url": "/outputs/...",
-  "vastu_report": [{"label": "bed", "direction": "SE", "vastu_ok": false, "confidence": 0.87}],
+  "vastu_report": [{"label": "bed", "direction": "SE", "vastu_ok": false, "confidence": 0.87, "rule_applied": true}],
   "rule_set_name": "Vastu Presets"
 }
 ```
 
-Older responses may omit `confidence`; Flutter handles this for compatibility.
+Older responses may omit `confidence` or `rule_applied`; Flutter handles both for compatibility. When `rule_applied` is `false`, the label is not covered by the active rule map. `vastu_ok` remains present for API compatibility, while Flutter presents the item as neutral/not evaluated rather than as a failure.
 
 ## Custom Rule Behavior
 

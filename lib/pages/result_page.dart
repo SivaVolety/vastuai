@@ -108,15 +108,26 @@ class _ResultPageState extends State<ResultPage> {
             if (widget.ruleSetName != null) Text('Rule set: ${widget.ruleSetName}'),
             const Divider(),
             ...widget.vastuReport.map((item) {
-              final isOk = item['vastu_ok'] as bool;
+              // Older backend responses did not include rule_applied. Treat
+              // the missing field as the legacy evaluated behavior, while a
+              // present false value is explicitly neutral/not evaluated.
+              final ruleApplied = item['rule_applied'] != false;
+              final isOk = item['vastu_ok'] == true;
               final label = item['label'];
               final direction = item['direction'];
-              final color = isOk ? Colors.green : Colors.red;
-              final icon = isOk ? Icons.check_circle : Icons.cancel;
+              final color = !ruleApplied
+                  ? Colors.grey.shade700
+                  : (isOk ? Colors.green : Colors.red);
+              final icon = !ruleApplied
+                  ? Icons.help_outline
+                  : (isOk ? Icons.check_circle : Icons.cancel);
               final confidence = item['confidence'];
               final confidenceText = widget.showConfidence && confidence is num
                   ? ' • ${(confidence * 100).round()}% confidence'
                   : '';
+              final statusText = !ruleApplied
+                  ? 'Not evaluated${widget.ruleSetName == null ? '' : ' by ${widget.ruleSetName}'}'
+                  : (isOk ? 'Vastu compliant' : 'Not compliant');
 
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -126,7 +137,7 @@ class _ResultPageState extends State<ResultPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${label.toString()} • $direction$confidenceText',
+                        '${label.toString()} • $direction$confidenceText\n$statusText',
                         style: TextStyle(
                           fontSize: 16,
                           color: color,
