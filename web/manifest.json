@@ -3,9 +3,9 @@
     "short_name": "VastuAI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "AI-assisted floor-plan analysis with configurable Vastu rules.",
+    "background_color": "#F7F5F0",
+    "theme_color": "#183C36",
+    "description": "VastuAI: AI-assisted floor-plan analysis with configurable Vastu rules.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

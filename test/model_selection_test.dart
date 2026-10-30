@@ -136,7 +136,7 @@ void main() {
     await tester.pumpWidget(screen());
     expect(selection.selected, DetectorModel.v1);
     expect(find.text(DetectorModel.betaWarning), findsNothing);
-    await tester.tap(find.byType(DropdownButtonFormField<DetectorModel>));
+    await tester.tap(find.byType(DropdownButton<DetectorModel>));
     await tester.pumpAndSettle();
     await tester.tap(find.text(DetectorModel.v2.selectorLabel).last);
     await tester.pumpAndSettle();

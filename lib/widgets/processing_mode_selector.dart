@@ -1,59 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/rule_set_provider.dart';
+import '../theme/vastu_theme.dart';
+import 'brand_components.dart';
 
 class ProcessingModeSelector extends StatelessWidget {
-  const ProcessingModeSelector({super.key});
+  const ProcessingModeSelector(
+      {super.key,
+      this.enabled = true,
+      this.compact = false,
+      this.showManage = true});
+  final bool enabled, compact, showManage;
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<RuleSetProvider>(context);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Tooltip(
-          message: 'Select rule set for Vastu processing',
-          child: Icon(Icons.help_outline),
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: IntrinsicWidth(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                border: Border.all(
-                  color: Colors.grey, // You can customize the border color
-                  width: 1,
-                ),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: provider.selected,
-                  borderRadius: BorderRadius.circular(12.0),
-                  items: provider.ruleSetNames.map((name) {
-                    return DropdownMenuItem(
-                      value: name,
-                      child: Text(name, overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-                  onChanged: (val) => provider.select(val!),
-                  isDense: true,
-                ),
-              ),
-            ),
-          ),
-        ),
+    final provider = context.watch<RuleSetProvider>();
+    return Row(children: [
+      Expanded(
+          child: BrandSelect<String>(
+        value: provider.selected,
+        compact: compact,
+        hint: 'Select a tradition',
+        items: provider.ruleSetNames
+            .map((name) => DropdownMenuItem(
+                  value: name,
+                  child: Text(name, overflow: TextOverflow.ellipsis),
+                ))
+            .toList(),
+        onChanged: enabled
+            ? (value) {
+                if (value != null) provider.select(value);
+              }
+            : null,
+      )),
+      if (showManage) ...[
+        const SizedBox(width: VastuSpace.xs),
         IconButton(
-          icon: const Icon(Icons.edit, color: Colors.blueAccent),
+          icon: const Icon(Icons.edit_outlined, size: 20),
           tooltip: 'Manage rule sets',
-          onPressed: () {
-            Navigator.pushNamed(context, '/settings');
-          },
+          onPressed:
+              enabled ? () => Navigator.pushNamed(context, '/settings') : null,
         ),
       ],
-    );
+    ]);
   }
 }

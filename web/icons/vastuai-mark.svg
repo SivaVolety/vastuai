@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <title>VastuAI</title>
+  <g fill="none" stroke="#183C36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 22 23 7 39 22V42H7Z"/>
+    <path d="M23 20V42M7 30H23M23 34H32"/>
+  </g>
+  <path fill="#D97757" d="M40 4 45 17 40 14 35 17Z"/>
+</svg>

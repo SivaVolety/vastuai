@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/detector_model.dart';
 import '../providers/model_selection_provider.dart';
+import '../theme/vastu_theme.dart';
+import 'brand_components.dart';
 
 class ModelSelector extends StatelessWidget {
   const ModelSelector({super.key, this.enabled = true});
@@ -10,19 +12,12 @@ class ModelSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selection = context.watch<ModelSelectionProvider>();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: DropdownButtonFormField<DetectorModel>(
-            initialValue: selection.selected,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Detection model',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          BrandSelect<DetectorModel>(
+            value: selection.selected,
             items: DetectorModel.values
                 .map((model) => DropdownMenuItem(
                       value: model,
@@ -36,13 +31,12 @@ class ModelSelector extends StatelessWidget {
                   }
                 : null,
           ),
-        ),
-        if (selection.selected == DetectorModel.v2)
-          const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Text(DetectorModel.betaWarning, textAlign: TextAlign.center),
-          ),
-      ]),
-    );
+          if (selection.selected == DetectorModel.v2)
+            Padding(
+              padding: const EdgeInsets.only(top: VastuSpace.sm),
+              child: Text(DetectorModel.betaWarning,
+                  style: VastuType.small.copyWith(color: VastuColors.warning)),
+            ),
+        ]);
   }
 }
