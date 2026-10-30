@@ -17,24 +17,32 @@ class ProcessingModeSelector extends StatelessWidget {
           child: Icon(Icons.help_outline),
         ),
         const SizedBox(width: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
-            border: Border.all(
-              color: Colors.grey, // You can customize the border color
-              width: 1,
-            ),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: provider.selected,
-              borderRadius: BorderRadius.circular(12.0),
-              items: provider.ruleSetNames.map((name) {
-                return DropdownMenuItem(value: name, child: Text(name));
-              }).toList(),
-              onChanged: (val) => provider.select(val!),
-              isDense: true,
+        Flexible(
+          child: IntrinsicWidth(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                border: Border.all(
+                  color: Colors.grey, // You can customize the border color
+                  width: 1,
+                ),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: provider.selected,
+                  borderRadius: BorderRadius.circular(12.0),
+                  items: provider.ruleSetNames.map((name) {
+                    return DropdownMenuItem(
+                      value: name,
+                      child: Text(name, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (val) => provider.select(val!),
+                  isDense: true,
+                ),
+              ),
             ),
           ),
         ),
