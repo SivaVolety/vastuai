@@ -8,6 +8,7 @@ class AnalysisHistoryEntry {
   final bool showConfidence;
   final bool showBoundingBoxes;
   final String orientation;
+  final String? modelVersion;
 
   const AnalysisHistoryEntry({
     required this.id,
@@ -19,6 +20,7 @@ class AnalysisHistoryEntry {
     this.showConfidence = false,
     this.showBoundingBoxes = true,
     this.orientation = 'N',
+    this.modelVersion,
   });
 
   Map<String, dynamic> toJson() => {
@@ -31,6 +33,7 @@ class AnalysisHistoryEntry {
         'showConfidence': showConfidence,
         'showBoundingBoxes': showBoundingBoxes,
         'orientation': orientation,
+        'modelVersion': modelVersion,
       };
 
   factory AnalysisHistoryEntry.fromJson(Map<String, dynamic> json) {
@@ -47,6 +50,7 @@ class AnalysisHistoryEntry {
       showConfidence: json['showConfidence'] as bool? ?? false,
       showBoundingBoxes: json['showBoundingBoxes'] as bool? ?? true,
       orientation: json['orientation'] as String? ?? 'N',
+      modelVersion: json['modelVersion'] as String?,
     );
   }
 

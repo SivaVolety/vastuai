@@ -3,6 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vastuai/pages/result_page.dart';
 
 void main() {
+  for (final entry in <String?, String>{
+    'v1': 'Stable V1', 'v2': 'Experimental V2', null: 'Not reported by backend',
+  }.entries) {
+    testWidgets('shows model indicator ${entry.value}', (tester) async {
+      await tester.pumpWidget(MaterialApp(home: ResultPage(
+        imageUrl: 'https://example.invalid/output.jpg', vastuReport: const [],
+        modelVersion: entry.key,
+      )));
+      expect(find.text('Model: ${entry.value}'), findsOneWidget);
+    });
+  }
+
   testWidgets('shows a neutral not-evaluated state for uncovered labels',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(

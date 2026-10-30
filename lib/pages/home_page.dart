@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import '../widgets/processing_mode_selector.dart';
 import '../services/vastu_api_service.dart';
 import '../services/analysis_history_service.dart';
@@ -15,6 +13,10 @@ import '../providers/advanced_settings_provider.dart';
 import '../widgets/cross_overlay.dart';
 import 'result_page.dart';
 import 'package:image/image.dart' as img;
+import 'package:flutter/foundation.dart';
+import '../widgets/model_selector.dart';
+import '../providers/model_selection_provider.dart';
+import '../models/detector_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,7 +26,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  File? _imageFile;
+  XFile? _imageFile;
+  Uint8List? _imageBytes;
   int _rotation = 0;
   bool _isLoading = false;
   bool _showOverlay = true;
@@ -35,6 +38,10 @@ class _HomePageState extends State<HomePage> {
   double _currentScale = 1.0;
 
   Future<void> _selectImageSource() async {
+    if (kIsWeb) {
+      await _pickImageFromSource(ImageSource.gallery);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       builder: (_) {
@@ -67,8 +74,11 @@ class _HomePageState extends State<HomePage> {
   Future<void> _pickImageFromSource(ImageSource source) async {
     final picked = await ImagePicker().pickImage(source: source);
     if (picked != null) {
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
       setState(() {
-        _imageFile = File(picked.path);
+        _imageFile = picked;
+        _imageBytes = bytes;
         _rotation = 0;
         _resetZoom();
       });
@@ -109,6 +119,7 @@ class _HomePageState extends State<HomePage> {
     if (_imageFile == null || _isLoading) return;
     final provider = Provider.of<RuleSetProvider>(context, listen: false);
     final advanced = Provider.of<AdvancedSettingsProvider>(context, listen: false);
+    final selectedModel = context.read<ModelSelectionProvider>().selected;
     setState(() => _isLoading = true);
 
     try {
@@ -146,31 +157,33 @@ class _HomePageState extends State<HomePage> {
       // Show overlay again
       setState(() => _showOverlay = true);
 
-      // Save to file
-      final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/transformed_image.png');
-      await file.writeAsBytes(resizedPngBytes);
-
-      final jsonResponse = await VastuApiService().upload(file,
+      final jsonResponse = await VastuApiService().uploadBytes(
+        Uint8List.fromList(resizedPngBytes),
+        filename: 'transformed_image.png',
         ruleSetName: provider.selected ?? 'Vastu Presets',
         rules: await provider.selectedRules,
         confidenceThreshold: advanced.confidenceThreshold,
         showBoundingBoxes: advanced.showBoundingBoxes,
+        modelVersion: selectedModel.name,
       );
+      final reportedModel = DetectorModel.fromVersion(jsonResponse['model_version']);
       final imageUrl = jsonResponse['image_url'] as String;
       final vastuReport = jsonResponse['vastu_report'] as List;
       final baseUrl = await ApiConfig.getBaseUrl();
       final resolvedImageUrl = imageUrl.startsWith('http') ? imageUrl : '$baseUrl$imageUrl';
       // History is best-effort: a local persistence failure must not hide a
       // successful analysis from the user.
-      await AnalysisHistoryService().saveRemoteResult(
-        imageUrl: resolvedImageUrl,
-        ruleSetName: jsonResponse['rule_set_name'] as String? ?? provider.selected ?? 'Vastu Presets',
-        report: List<Map<String, dynamic>>.from(vastuReport),
-        confidenceThreshold: advanced.confidenceThreshold,
-        showConfidence: advanced.showConfidence,
-        showBoundingBoxes: advanced.showBoundingBoxes,
-      );
+      if (!kIsWeb) {
+        await AnalysisHistoryService().saveRemoteResult(
+          imageUrl: resolvedImageUrl,
+          ruleSetName: jsonResponse['rule_set_name'] as String? ?? provider.selected ?? 'Vastu Presets',
+          report: List<Map<String, dynamic>>.from(vastuReport),
+          confidenceThreshold: advanced.confidenceThreshold,
+          showConfidence: advanced.showConfidence,
+          showBoundingBoxes: advanced.showBoundingBoxes,
+          modelVersion: reportedModel?.name,
+        );
+      }
       if (mounted) setState(() => _isLoading = false);
       if (mounted) {
         Navigator.push(
@@ -181,6 +194,7 @@ class _HomePageState extends State<HomePage> {
               vastuReport: List<Map<String, dynamic>>.from(vastuReport),
               ruleSetName: jsonResponse['rule_set_name'] as String?,
               showConfidence: advanced.showConfidence,
+              modelVersion: reportedModel?.name,
             ),
           ),
         );
@@ -235,7 +249,9 @@ class _HomePageState extends State<HomePage> {
                                 onDoubleTap: () => _toggleZoom(2.5),
                                 child: Transform.rotate(
                                   angle: _rotation * math.pi / 180,
-                                  child: Image.file(_imageFile!),
+                                  child: _imageBytes == null
+                                      ? const SizedBox.shrink()
+                                      : Image.memory(_imageBytes!, fit: BoxFit.contain),
                                 ),
                               ),
                             ),
@@ -269,6 +285,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ProcessingModeSelector(),
+              ModelSelector(enabled: !_isLoading),
               const Text('Rotate the floor plan until North is facing up.'),
               ElevatedButton(
                 onPressed:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_info.dart';
+import '../models/detector_model.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -13,6 +14,8 @@ class AboutPage extends StatelessWidget {
       Center(child: Text('Version $appVersion+$appBuild')),
       const SizedBox(height: 24),
       const Text('VastuAI is an AI-assisted floor-plan analysis application that uses computer vision to identify objects in floor plans, determine their directional placement, and evaluate them using configurable Vastu rules.', style: TextStyle(height: 1.5)),
+      const SizedBox(height: 16),
+      const Text(DetectorModel.description, style: TextStyle(height: 1.5)),
       const SizedBox(height: 16),
       const Text('Technology', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       const SizedBox(height: 6),

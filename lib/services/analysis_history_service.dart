@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
@@ -33,6 +34,7 @@ class AnalysisHistoryService {
   }
 
   Future<List<AnalysisHistoryEntry>> load() async {
+    if (kIsWeb) return [];
     try {
       final file = await _metadata();
       if (!await file.exists()) return [];
@@ -66,7 +68,9 @@ class AnalysisHistoryService {
     required double confidenceThreshold,
     required bool showConfidence,
     required bool showBoundingBoxes,
+    String? modelVersion,
   }) async {
+    if (kIsWeb) return null;
     try {
       final base = await ApiConfig.getBaseUrl();
       final uri = Uri.parse(imageUrl.startsWith('http') ? imageUrl : '$base$imageUrl');
@@ -85,6 +89,7 @@ class AnalysisHistoryService {
         confidenceThreshold: confidenceThreshold,
         showConfidence: showConfidence,
         showBoundingBoxes: showBoundingBoxes,
+        modelVersion: modelVersion,
       );
       final entries = await load();
       entries.insert(0, entry);
@@ -100,6 +105,7 @@ class AnalysisHistoryService {
   }
 
   Future<void> delete(String id) async {
+    if (kIsWeb) return;
     final entries = await load();
     final matches = entries.where((e) => e.id == id).toList();
     for (final entry in matches) {
@@ -109,6 +115,7 @@ class AnalysisHistoryService {
   }
 
   Future<void> clear() async {
+    if (kIsWeb) return;
     final entries = await load();
     for (final entry in entries) {
       await _deleteFile(entry.imagePath);

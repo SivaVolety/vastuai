@@ -2,8 +2,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConfig {
   static const defaultBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://fp-ai-production.up.railway.app',
+    'VASTUAI_API_BASE_URL',
+    // Keep the former define usable for existing mobile development builds.
+    defaultValue: String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'http://localhost:8000',
+    ),
   );
   static const _overrideKey = 'api_base_url';
 
@@ -24,7 +28,7 @@ class ApiConfig {
     final normalized = normalize(value);
     if (normalized.isEmpty) throw const FormatException('URL cannot be empty');
     final uri = Uri.tryParse(normalized);
-    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
+    if (uri == null || !const ['http', 'https'].contains(uri.scheme) || uri.host.isEmpty) {
       throw const FormatException('Enter a valid URL, including http:// or https://');
     }
     final prefs = await SharedPreferences.getInstance();

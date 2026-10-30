@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/cross_overlay.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import '../models/detector_model.dart';
 
 class ResultPage extends StatefulWidget {
   final String imageUrl;
@@ -8,6 +10,7 @@ class ResultPage extends StatefulWidget {
   final String? ruleSetName;
   final bool showConfidence;
   final String? localImagePath;
+  final String? modelVersion;
 
   const ResultPage({
     super.key,
@@ -16,6 +19,7 @@ class ResultPage extends StatefulWidget {
     this.ruleSetName,
     this.showConfidence = false,
     this.localImagePath,
+    this.modelVersion,
   });
 
   @override
@@ -69,7 +73,7 @@ class _ResultPageState extends State<ResultPage> {
                           panEnabled: true,
                           minScale: 0.5,
                           maxScale: 5.0,
-                          child: widget.localImagePath != null
+                          child: !kIsWeb && widget.localImagePath != null
                               ? Image.file(File(widget.localImagePath!), fit: BoxFit.contain)
                               : Image.network(
                             widget.imageUrl,
@@ -106,6 +110,7 @@ class _ResultPageState extends State<ResultPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             if (widget.ruleSetName != null) Text('Rule set: ${widget.ruleSetName}'),
+            Text('Model: ${DetectorModel.fromVersion(widget.modelVersion)?.label ?? 'Not reported by backend'}'),
             const Divider(),
             ...widget.vastuReport.map((item) {
               // Older backend responses did not include rule_applied. Treat

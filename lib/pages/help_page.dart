@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/detector_model.dart';
 
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
@@ -11,10 +12,11 @@ class HelpPage extends StatelessWidget {
         _section('Camera vs Gallery', 'Camera is useful for a paper plan or a plan on a screen. Gallery is useful for an existing scan, photograph, or digital image.'),
         _section('Image Positioning', 'Pan by dragging, zoom with gestures or double tap, rotate in 30-degree increments, and use Reset Zoom to return to the default view. The center cross helps align the plan.'),
         _section('Rule Sets', 'Vastu Presets is the built-in read-only set. You can create and edit custom rule sets, then select the active set before analysis. Custom rule sets are complete independent maps and do not inherit unspecified Vastu Preset rules.'),
+        _section('Detection Models', '${DetectorModel.description} ${DetectorModel.betaWarning} Choose the model on Home; your choice lasts for the app session. Results show the model reported by the backend.'),
         _section('Advanced Settings', 'Detection Confidence controls the minimum YOLO confidence from 0.10 to 0.90. Increasing it may reduce false detections but can miss real objects. Show Detection Confidence displays percentages. Show Bounding Boxes controls annotation boxes. Reset to Defaults restores original behavior.'),
         _section('Understanding Results', 'Each detected object has a label, calculated direction, and Vastu pass/fail result. When enabled, confidence is shown as a percentage and bounding boxes appear on the annotated image.'),
-        _section('History', 'Successful analyses are saved locally on this device. You can reopen them without the backend. The newest 25 analyses are retained, and entries can be deleted individually or cleared.'),
-        _section('Connection Troubleshooting', 'Check the backend URL in Settings and use Test Connection. The FastAPI backend must be running. A phone and local development server usually need to be on the same network. A deployed HTTPS API can be configured later.'),
+        _section('History', 'In the mobile app, successful analyses are saved locally on this device. Web analyses are not saved and must be reviewed before leaving the results page. You can reopen them without the backend. The newest 25 analyses are retained, and entries can be deleted individually or cleared.'),
+        _section('Connection Troubleshooting', 'Check the backend URL in Settings and use Test Connection. The FastAPI backend must be running. A phone and local development server usually need to be on the same network. Web deployments use a public HTTPS API, normally https://api.vastuai.com.'),
         _section('Detection Troubleshooting', 'Use a clear floor plan, avoid extreme cropping, and make sure objects are visible. If valid objects are missed, try a lower confidence threshold within the allowed range.'),
         _section('Disclaimer', 'VastuAI is an AI-assisted tool. Object detections, directions, and Vastu evaluations may be incorrect and should be reviewed by a qualified person.'),
       ]);

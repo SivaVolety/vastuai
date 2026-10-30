@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/analysis_history_entry.dart';
 import '../services/analysis_history_service.dart';
@@ -64,6 +65,14 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return const Center(child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Text('Saved History is available in the mobile app. Web analyses '
+            'are not saved; review results before leaving the page.',
+            textAlign: TextAlign.center),
+      ));
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('History'),
@@ -84,7 +93,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     subtitle: Text('${entry.timestamp.toLocal()}\n${entry.passedCount} passed • ${entry.failedCount} failed'),
                     isThreeLine: true,
                     trailing: IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => _delete(entry)),
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ResultPage(imageUrl: '', localImagePath: entry.imagePath, vastuReport: entry.report, ruleSetName: entry.ruleSetName, showConfidence: entry.showConfidence))),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ResultPage(imageUrl: '', localImagePath: entry.imagePath, vastuReport: entry.report, ruleSetName: entry.ruleSetName, showConfidence: entry.showConfidence, modelVersion: entry.modelVersion))),
                   ),
                 );
               },

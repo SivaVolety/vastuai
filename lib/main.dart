@@ -10,6 +10,7 @@ import 'widgets/app_scaffold.dart';
 import 'package:provider/provider.dart';
 import 'providers/rule_set_provider.dart';
 import 'providers/advanced_settings_provider.dart';
+import 'providers/model_selection_provider.dart';
 
 void main() => runApp(const MyApp());
 
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => RuleSetProvider()),
         ChangeNotifierProvider(create: (_) => AdvancedSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => ModelSelectionProvider()),
       ],
       child: MaterialApp(
         title: 'VastuAI',
