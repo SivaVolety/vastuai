@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
-import '../widgets/cross_overlay.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import '../models/detector_model.dart';
+import '../models/results_analysis.dart';
+import '../theme/vastu_theme.dart';
+import '../widgets/app_scaffold.dart';
+import '../widgets/results/results_header.dart';
+import '../widgets/results/assessment_overview_card.dart';
+import '../widgets/results/analysis_summary_card.dart';
+import '../widgets/results/annotated_plan_card.dart';
+import '../widgets/results/result_insights_card.dart';
+import '../widgets/results/recommendations_card.dart';
+import '../widgets/results/detailed_findings.dart';
 
-class ResultPage extends StatefulWidget {
+class ResultPage extends StatelessWidget {
   final String imageUrl;
   final List<Map<String, dynamic>> vastuReport;
   final String? ruleSetName;
@@ -23,147 +29,106 @@ class ResultPage extends StatefulWidget {
   });
 
   @override
-  State<ResultPage> createState() => _ResultPageState();
+  Widget build(BuildContext context) {
+    final analysis = ResultsAnalysis(
+        report: vastuReport,
+        ruleSetName: ruleSetName,
+        modelVersion: modelVersion);
+    final narrative = analysis.localNarrative;
+    return AppScaffold(
+        title: 'Analysis Results',
+        body: LayoutBuilder(builder: (context, constraints) {
+          final desktop = constraints.maxWidth >= VastuLayout.desktop;
+          final inset = desktop
+              ? (constraints.maxWidth >= 1280
+                  ? VastuSpace.page
+                  : VastuSpace.xxl)
+              : VastuSpace.lg;
+          final overview = AssessmentOverviewCard(analysis: analysis);
+          final summary = AnalysisSummaryCard(content: narrative);
+          final plan = AnnotatedPlanCard(
+              imageUrl: imageUrl, localImagePath: localImagePath);
+          final strengths = ResultInsightsCard(
+              title: 'Key Strengths',
+              items: narrative.strengths,
+              emptyText: analysis.evaluated == 0
+                  ? 'No favorable placements can be identified without evaluated findings.'
+                  : 'No evaluated placements are favorable under the selected rules.',
+              icon: Icons.check_circle_outline_rounded,
+              positive: true);
+          final improvements = ResultInsightsCard(
+              title: 'Areas for Improvement',
+              items: narrative.priorities,
+              emptyText: analysis.evaluated == 0
+                  ? 'No issues can be established without evaluated findings.'
+                  : 'No placements need attention under the selected rules.',
+              icon: Icons.flag_outlined);
+          final recommendations = RecommendationsCard(
+              content: narrative, evaluated: analysis.evaluated);
+          return SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(inset, 0, inset, VastuSpace.section),
+            child: Center(
+                child: ConstrainedBox(
+              constraints:
+                  const BoxConstraints(maxWidth: VastuLayout.contentMax),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ResultsHeader(
+                        analysis: analysis,
+                        desktop: desktop,
+                        onBack: () {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          } else {
+                            Navigator.pushReplacementNamed(context, '/');
+                          }
+                        }),
+                    if (desktop)
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                                flex: 5,
+                                child: _SectionStack(children: [
+                                  overview,
+                                  summary,
+                                  strengths,
+                                  improvements
+                                ])),
+                            const SizedBox(width: VastuSpace.xl),
+                            Expanded(
+                                flex: 6,
+                                child: _SectionStack(
+                                    children: [plan, recommendations])),
+                          ])
+                    else
+                      _SectionStack(children: [
+                        overview,
+                        summary,
+                        plan,
+                        strengths,
+                        improvements,
+                        recommendations
+                      ]),
+                    const SizedBox(height: VastuSpace.xl),
+                    DetailedFindings(
+                        analysis: analysis, showConfidence: showConfidence),
+                  ]),
+            )),
+          );
+        }));
+  }
 }
 
-class _ResultPageState extends State<ResultPage> {
-  final TransformationController _transformationController =
-      TransformationController();
-  double _currentScale = 1.0;
-
-  void _toggleZoom(double factor) {
-    setState(() {
-      if (_currentScale <= 1.0) {
-        _currentScale = factor;
-      } else {
-        _currentScale = 1.0;
-      }
-      _transformationController.value = Matrix4.identity()
-        ..scaleByDouble(_currentScale, _currentScale, _currentScale, 1.0);
-    });
-  }
-
+class _SectionStack extends StatelessWidget {
+  const _SectionStack({required this.children});
+  final List<Widget> children;
   @override
-  void dispose() {
-    _transformationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Analysis Results')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onDoubleTap: () => _toggleZoom(2.5),
-                        child: InteractiveViewer(
-                          transformationController: _transformationController,
-                          clipBehavior: Clip.none,
-                          panEnabled: true,
-                          minScale: 0.5,
-                          maxScale: 5.0,
-                          child: !kIsWeb && widget.localImagePath != null
-                              ? Image.file(File(widget.localImagePath!), fit: BoxFit.contain)
-                              : Image.network(
-                            widget.imageUrl,
-                            fit: BoxFit.contain,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Text("Failed to load image.");
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    const IgnorePointer(child: CrossOverlay()),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _resetZoom,
-                icon: const Icon(Icons.center_focus_strong),
-                label: const Text('Reset Zoom'),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Vastu Compliance Report:',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            if (widget.ruleSetName != null) Text('Rule set: ${widget.ruleSetName}'),
-            Text('Model: ${DetectorModel.fromVersion(widget.modelVersion)?.label ?? 'Not reported by backend'}'),
-            const Divider(),
-            ...widget.vastuReport.map((item) {
-              // Older backend responses did not include rule_applied. Treat
-              // the missing field as the legacy evaluated behavior, while a
-              // present false value is explicitly neutral/not evaluated.
-              final ruleApplied = item['rule_applied'] != false;
-              final isOk = item['vastu_ok'] == true;
-              final label = item['label'];
-              final direction = item['direction'];
-              final color = !ruleApplied
-                  ? Colors.grey.shade700
-                  : (isOk ? Colors.green : Colors.red);
-              final icon = !ruleApplied
-                  ? Icons.help_outline
-                  : (isOk ? Icons.check_circle : Icons.cancel);
-              final confidence = item['confidence'];
-              final confidenceText = widget.showConfidence && confidence is num
-                  ? ' • ${(confidence * 100).round()}% confidence'
-                  : '';
-              final statusText = !ruleApplied
-                  ? 'Not evaluated${widget.ruleSetName == null ? '' : ' by ${widget.ruleSetName}'}'
-                  : (isOk ? 'Vastu compliant' : 'Not compliant');
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
-                child: Row(
-                  children: [
-                    Icon(icon, color: color),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${label.toString()} • $direction$confidenceText\n$statusText',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _resetZoom() {
-    setState(() {
-      _transformationController.value = Matrix4.identity();
-      _currentScale = 1.0;
-    });
-  }
+  Widget build(BuildContext context) => Column(children: [
+        for (int i = 0; i < children.length; i++) ...[
+          if (i > 0) const SizedBox(height: VastuSpace.xl),
+          children[i],
+        ],
+      ]);
 }
