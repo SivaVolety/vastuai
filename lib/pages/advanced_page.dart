@@ -33,7 +33,7 @@ class AdvancedPage extends StatelessWidget {
           const Divider(),
           const ListTile(
             title: Text('Floor Plan Orientation'),
-            subtitle: Text('VastuAI currently treats the top of the prepared image as North.'),
+            subtitle: Text('VasthuAI currently treats the top of the prepared image as North.'),
           ),
           const SizedBox(height: 12),
           OutlinedButton(

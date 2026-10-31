@@ -4,7 +4,7 @@ import '../models/ai_analysis_summary.dart';
 import '../models/results_analysis.dart';
 import 'api_config.dart';
 
-/// Calls only the configured VastuAI backend. Provider credentials/configuration
+/// Calls only the configured VasthuAI backend. Provider credentials/configuration
 /// belong exclusively to that server; no image bytes or paths are submitted.
 class AnalysisSummaryService {
   AnalysisSummaryService({http.Client? client, this.requestTimeout = timeout})
@@ -67,6 +67,8 @@ class AnalysisSummaryService {
                       : null,
                   'rule_applied': finding.data['rule_applied'] != false,
                   'vastu_ok': finding.data['vastu_ok'] == true,
+                  if (finding.allowedDirections != null)
+                    'allowed_directions': finding.allowedDirections,
                 })
             .toList(),
       };

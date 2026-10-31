@@ -1,11 +1,11 @@
 {
-    "name": "VastuAI",
-    "short_name": "VastuAI",
+    "name": "VasthuAI",
+    "short_name": "VasthuAI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#F7F5F0",
     "theme_color": "#183C36",
-    "description": "VastuAI: AI-assisted floor-plan analysis with configurable Vastu rules.",
+    "description": "VasthuAI: AI-assisted floor-plan analysis with configurable Vastu rules.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

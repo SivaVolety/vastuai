@@ -29,7 +29,7 @@ void main() {
       await tester.pumpWidget(const MyApp());
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.text('Understand Your Space with VastuAI'), findsOneWidget);
+      expect(find.text('Understand Your Space with VasthuAI'), findsOneWidget);
       expect(find.text('Stable V1 — Recommended'), findsOneWidget);
       final floor = tester.getTopLeft(find.byType(FloorPlanCard));
       final setup = tester.getTopLeft(find.byType(AnalysisSetupCard));

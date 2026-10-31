@@ -5,9 +5,13 @@ import '../brand_components.dart';
 
 class RecommendationsCard extends StatelessWidget {
   const RecommendationsCard(
-      {super.key, required this.content, required this.evaluated});
+      {super.key,
+      required this.content,
+      required this.evaluated,
+      this.analysis});
   final ResultNarrative content;
   final int evaluated;
+  final ResultsAnalysis? analysis;
   @override
   Widget build(BuildContext context) => BrandedCard(
           child: Column(
@@ -24,7 +28,11 @@ class RecommendationsCard extends StatelessWidget {
                     ? 'No recommendations can be made without evaluated placements.'
                     : 'No placements need attention under the selected rules.',
                 style: VastuType.small),
-          for (int i = 0; i < content.recommendations.length; i++)
+          for (int i = 0;
+              i <
+                  (analysis?.attention ?? content.recommendations.length)
+                      .clamp(0, 3);
+              i++)
             Padding(
               padding: EdgeInsets.only(
                   bottom: i == content.recommendations.length - 1
@@ -43,14 +51,34 @@ class RecommendationsCard extends StatelessWidget {
                             .copyWith(color: VastuColors.warning))),
                 const SizedBox(width: VastuSpace.md),
                 Expanded(
-                    child: Text(content.recommendations[i],
+                    child: Text(
+                        analysis == null
+                            ? content.recommendations[i]
+                            : analysis!
+                                .withStatus(FindingStatus.attention)[i]
+                                .remedy!
+                                .action,
                         style: VastuType.small)),
               ]),
             ),
+          if (content.isAiGenerated && content.recommendations.isNotEmpty)
+            Material(
+                color: Colors.transparent,
+                child: ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title:
+                        const Text('AI explanation', style: VastuType.section),
+                    children: [
+                      for (final text in content.recommendations)
+                        Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: VastuSpace.md),
+                            child: Text(text, style: VastuType.small))
+                    ])),
           if (content.recommendations.isNotEmpty) ...[
             const SizedBox(height: VastuSpace.lg),
             const Text(
-                'Allowed directions are not included in this report. Consult the selected rule set for direction-specific guidance.',
+                'Use these review points only where practical. The selected rules determine the suggested placements.',
                 style: VastuType.caption),
           ],
         ],

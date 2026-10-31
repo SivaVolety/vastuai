@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ModelSelectionProvider()),
       ],
       child: MaterialApp(
-        title: 'VastuAI',
+        title: 'VasthuAI',
         theme: ThemeData(primarySwatch: Colors.blue),
         initialRoute: '/',
         routes: {

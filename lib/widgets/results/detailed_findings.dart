@@ -3,6 +3,8 @@ import '../../models/results_analysis.dart';
 import '../../theme/vastu_theme.dart';
 import '../brand_components.dart';
 import 'result_status_pill.dart';
+import 'remedy_details.dart';
+import '../../models/finding_remedy.dart';
 
 class DetailedFindings extends StatefulWidget {
   const DetailedFindings(
@@ -165,10 +167,14 @@ class _FindingRowState extends State<_FindingRow> {
                     style: VastuType.small),
               Text('Model: ${widget.analysis.modelLabel}',
                   style: VastuType.small),
-              if (f.status != FindingStatus.notEvaluated)
-                const Text(
-                    'Allowed directions and rule details were not included in this report.',
-                    style: VastuType.caption),
+              if (f.remedy != null) ...[
+                const SizedBox(height: VastuSpace.lg),
+                RemedyDetails(finding: f, ruleSet: widget.analysis.ruleSetName),
+              ] else if (f.allowedDirections != null &&
+                  f.allowedDirections!.isNotEmpty)
+                Text(
+                    'Allowed directions: ${directionList(f.allowedDirections!)}',
+                    style: VastuType.small),
             ]),
           ),
       ]),

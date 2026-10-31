@@ -1,6 +1,6 @@
-# VastuAI
+# VasthuAI
 
-VastuAI is an AI-assisted Flutter app for analyzing floor-plan images with configurable Vastu rules.
+VasthuAI is an AI-assisted Flutter app for analyzing floor-plan images with configurable Vastu rules.
 
 ## Features
 
@@ -82,7 +82,7 @@ Verify the container with `curl http://localhost:8000/health`. The image runs CP
 
 ## API
 
-`GET /health` returns `{"status":"ok","service":"VastuAI","models":["v1","v2"]}`.
+`GET /health` returns `{"status":"ok","service":"VasthuAI","models":["v1","v2"]}`.
 
 `POST /upload-rotated` accepts multipart fields:
 
@@ -139,7 +139,7 @@ The verified backend suite contains six focused tests; the Flutter suite contain
 
 ## Disclaimer
 
-VastuAI provides AI-assisted analysis and is not guaranteed architectural, engineering, or professional Vastu advice. Verify important decisions independently.
+VasthuAI provides AI-assisted analysis and is not guaranteed architectural, engineering, or professional Vastu advice. Verify important decisions independently.
 
 ## Detector Models
 
@@ -159,7 +159,7 @@ Uncovered labels remain not evaluated by the selected rules.
 
 ## Flutter Web Production Deployment
 
-Frontend: **https://vastuai.com** (optionally **https://www.vastuai.com**).
+Frontend: **https://vasthu.ai**.
 Backend: **https://api.vastuai.com**, hosted independently from this app.
 No Railway service is required.
 
@@ -187,8 +187,7 @@ files revalidated across releases so clients receive new configuration. Serve
 all generated JavaScript, fonts, assets, and CanvasKit files with correct MIME
 types. Deploy at the domain root (default base href `/`).
 
-Configure backend CORS to allow exactly `https://vastuai.com` and
-`https://www.vastuai.com`; allow multipart POST/OPTIONS and image GET requests.
+Configure backend CORS to allow exactly `https://vasthu.ai`; allow multipart POST/OPTIONS and image GET requests.
 Route `/upload-rotated`, `/health`, and `/outputs/` to the backend. HTTPS frontend
 pages must use an HTTPS API to avoid mixed-content blocking. Results resolve
 relative `image_url` values against the configured backend URL. Existing Settings

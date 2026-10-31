@@ -118,7 +118,8 @@ void main() {
     ));
 
     expect(find.text('Needs Attention'), findsWidgets);
-    expect(find.textContaining('Bed — SE'), findsWidgets);
+    expect(find.text('Bed'), findsWidgets);
+    expect(find.text('South-East'), findsWidgets);
     final assessment = tester
         .widget<AssessmentOverviewCard>(find.byType(AssessmentOverviewCard))
         .analysis;

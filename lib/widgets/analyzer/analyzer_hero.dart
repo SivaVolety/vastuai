@@ -14,7 +14,7 @@ class AnalyzerHero extends StatelessWidget {
               constraints:
                   const BoxConstraints(maxWidth: VastuLayout.heroTextMax),
               child: Text(
-                'Understand Your Space with VastuAI',
+                'Understand Your Space with VasthuAI',
                 style: VastuType.display.copyWith(fontSize: desktop ? 64 : 40),
               )),
           const SizedBox(height: VastuSpace.copyGap),

@@ -1,5 +1,5 @@
 name: vastuai
-description: "A new Flutter project."
+description: "VasthuAI: floor-plan insights with computer vision and traditional Vastu rules."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -17,6 +17,8 @@ dependencies:
   path: ^1.9.1
   shared_preferences: ^2.2.2
   provider: ^6.1.5
+  url_launcher: ^6.3.3
+  flutter_svg: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -26,6 +28,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - web/icons/vastuai-mark.svg
     - assets/fonts/DMSerifDisplay-OFL.txt
     - assets/fonts/Lato-OFL.txt
   fonts:

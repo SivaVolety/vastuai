@@ -11,6 +11,7 @@ import '../widgets/results/annotated_plan_card.dart';
 import '../widgets/results/result_insights_card.dart';
 import '../widgets/results/recommendations_card.dart';
 import '../widgets/results/detailed_findings.dart';
+import '../widgets/results/result_remedies_card.dart';
 
 class ResultPage extends StatefulWidget {
   final String imageUrl;
@@ -126,15 +127,11 @@ class _ResultPageState extends State<ResultPage> {
                   : 'No evaluated placements are favorable under the selected rules.',
               icon: Icons.check_circle_outline_rounded,
               positive: true);
-          final improvements = ResultInsightsCard(
-              title: 'Areas for Improvement',
-              items: narrative.priorities,
-              emptyText: analysis.evaluated == 0
-                  ? 'No issues can be established without evaluated findings.'
-                  : 'No placements need attention under the selected rules.',
-              icon: Icons.flag_outlined);
+          final improvements = ResultRemediesCard(analysis: analysis);
           final recommendations = RecommendationsCard(
-              content: narrative, evaluated: analysis.evaluated);
+              content: narrative,
+              evaluated: analysis.evaluated,
+              analysis: analysis);
           return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(inset, 0, inset, VastuSpace.section),
             child: Center(
@@ -160,12 +157,8 @@ class _ResultPageState extends State<ResultPage> {
                           children: [
                             Expanded(
                                 flex: 5,
-                                child: _SectionStack(children: [
-                                  overview,
-                                  summary,
-                                  strengths,
-                                  improvements
-                                ])),
+                                child: _SectionStack(
+                                    children: [overview, summary, strengths])),
                             const SizedBox(width: VastuSpace.xl),
                             Expanded(
                                 flex: 6,
@@ -181,6 +174,10 @@ class _ResultPageState extends State<ResultPage> {
                         improvements,
                         recommendations
                       ]),
+                    if (desktop) ...[
+                      const SizedBox(height: VastuSpace.xl),
+                      improvements
+                    ],
                     const SizedBox(height: VastuSpace.xl),
                     DetailedFindings(
                         analysis: analysis,

@@ -1,4 +1,5 @@
 import 'detector_model.dart';
+import 'finding_remedy.dart';
 
 /// Presentation of the existing response semantics; never computes a score.
 enum FindingStatus {
@@ -15,6 +16,9 @@ class ResultFinding {
       : data = Map<String, dynamic>.unmodifiable(data);
   final Map<String, dynamic> data;
   String get label => displayLabel(data['label']);
+  List<String>? get allowedDirections =>
+      data['rule_applied'] == false ? null : FindingRemedy.snapshot(data);
+  FindingRemedy? get remedy => FindingRemedy.fromFinding(data);
   String get direction => data['direction']?.toString() ?? 'Not reported';
   num? get confidence =>
       data['confidence'] is num ? data['confidence'] as num : null;
