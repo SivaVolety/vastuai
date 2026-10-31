@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../services/analysis_summary_service.dart';
 import '../models/results_analysis.dart';
 import '../theme/vastu_theme.dart';
 import '../widgets/app_scaffold.dart';
@@ -10,13 +12,14 @@ import '../widgets/results/result_insights_card.dart';
 import '../widgets/results/recommendations_card.dart';
 import '../widgets/results/detailed_findings.dart';
 
-class ResultPage extends StatelessWidget {
+class ResultPage extends StatefulWidget {
   final String imageUrl;
   final List<Map<String, dynamic>> vastuReport;
   final String? ruleSetName;
   final bool showConfidence;
   final String? localImagePath;
   final String? modelVersion;
+  final AnalysisSummaryService? summaryService;
 
   const ResultPage({
     super.key,
@@ -26,15 +29,81 @@ class ResultPage extends StatelessWidget {
     this.showConfidence = false,
     this.localImagePath,
     this.modelVersion,
+    this.summaryService,
   });
 
   @override
+  State<ResultPage> createState() => _ResultPageState();
+}
+
+class _ResultPageState extends State<ResultPage> {
+  late ResultsAnalysis _analysis;
+  late String _fingerprint;
+  late AnalysisSummaryService _service;
+  ResultNarrative? _enhanced;
+  bool _loading = true;
+  int _request = 0;
+
+  ResultsAnalysis _fromWidget() => ResultsAnalysis(
+      report: widget.vastuReport,
+      ruleSetName: widget.ruleSetName,
+      modelVersion: widget.modelVersion);
+
+  @override
+  void initState() {
+    super.initState();
+    _service = widget.summaryService ?? AnalysisSummaryService.shared;
+    _analysis = _fromWidget();
+    _fingerprint = jsonEncode(AnalysisSummaryService.payload(_analysis));
+    _loadSummary();
+  }
+
+  @override
+  void didUpdateWidget(covariant ResultPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = _fromWidget();
+    final fingerprint = jsonEncode(AnalysisSummaryService.payload(next));
+    if (fingerprint != _fingerprint) {
+      _analysis = next;
+      _fingerprint = fingerprint;
+      _enhanced = null;
+      _loading = true;
+      _loadSummary();
+    }
+  }
+
+  Future<void> _loadSummary({bool retry = false}) async {
+    final request = ++_request;
+    ResultNarrative? content;
+    try {
+      content = await (retry
+          ? _service.retry(_analysis)
+          : _service.generate(_analysis));
+    } catch (_) {
+      content = null;
+    }
+    if (!mounted || request != _request) return;
+    setState(() {
+      _enhanced = content;
+      _loading = false;
+    });
+  }
+
+  void _retry() {
+    setState(() => _loading = true);
+    _loadSummary(retry: true);
+  }
+
+  @override
+  void dispose() {
+    _request++;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final analysis = ResultsAnalysis(
-        report: vastuReport,
-        ruleSetName: ruleSetName,
-        modelVersion: modelVersion);
-    final narrative = analysis.localNarrative;
+    final analysis = _analysis;
+    final narrative = _enhanced ?? analysis.localNarrative;
     return AppScaffold(
         title: 'Analysis Results',
         body: LayoutBuilder(builder: (context, constraints) {
@@ -45,9 +114,10 @@ class ResultPage extends StatelessWidget {
                   : VastuSpace.xxl)
               : VastuSpace.lg;
           final overview = AssessmentOverviewCard(analysis: analysis);
-          final summary = AnalysisSummaryCard(content: narrative);
+          final summary = AnalysisSummaryCard(
+              content: narrative, loading: _loading, onRetry: _retry);
           final plan = AnnotatedPlanCard(
-              imageUrl: imageUrl, localImagePath: localImagePath);
+              imageUrl: widget.imageUrl, localImagePath: widget.localImagePath);
           final strengths = ResultInsightsCard(
               title: 'Key Strengths',
               items: narrative.strengths,
@@ -113,7 +183,8 @@ class ResultPage extends StatelessWidget {
                       ]),
                     const SizedBox(height: VastuSpace.xl),
                     DetailedFindings(
-                        analysis: analysis, showConfidence: showConfidence),
+                        analysis: analysis,
+                        showConfidence: widget.showConfidence),
                   ]),
             )),
           );

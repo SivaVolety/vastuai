@@ -43,17 +43,21 @@ class ResultFinding {
       .join(' ');
 }
 
-/// Replaceable structured content for the summary UI. Phase 2 uses only the
-/// local factory below; there are no external AI calls or generated claims.
+/// Replaceable structured narrative; local fallback and backend enhancement
+/// share a presentation contract without carrying compliance/count fields.
 class ResultNarrative {
   const ResultNarrative(
       {required this.headline,
       required this.summary,
       required this.strengths,
       required this.priorities,
-      required this.recommendations});
+      required this.recommendations,
+      this.disclaimer,
+      this.isAiGenerated = false});
   final String headline, summary;
   final List<String> strengths, priorities, recommendations;
+  final String? disclaimer;
+  final bool isAiGenerated;
 }
 
 class ResultsAnalysis {
