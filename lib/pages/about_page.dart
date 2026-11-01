@@ -11,7 +11,8 @@ class AboutPage extends StatelessWidget {
   final CreatorProfile profile;
   Future<void> _contact(BuildContext context, Uri uri) async {
     try {
-      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (await launchUrl(uri,
+          mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank')) {
         return;
       }
     } catch (_) {/* fall through to local feedback */}
@@ -206,6 +207,11 @@ class AboutPage extends StatelessWidget {
                         runSpacing: VastuSpace.lg,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          if (profile.contacts['LinkedIn'] case final linkedIn?)
+                            TextButton.icon(
+                                onPressed: () => _contact(context, linkedIn),
+                                icon: const Icon(Icons.open_in_new_rounded),
+                                label: const Text('Stay in Touch')),
                           TextButton.icon(
                               onPressed: () =>
                                   Navigator.pushReplacementNamed(context, '/'),

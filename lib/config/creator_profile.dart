@@ -9,11 +9,12 @@ class CreatorProfile {
       this.website = 'https://vasthu.ai'});
   final String name;
 
-  /// Add assets/images/siva_profile.jpg, declare it in pubspec.yaml, then set
-  /// this field. Keep null until the real, approved portrait is available.
+  /// Bundled portrait path. Null or an image loading failure uses the monogram.
   final String? photoAsset;
   final String? email, github, linkedIn, website;
-  static const current = CreatorProfile();
+  static const current = CreatorProfile(
+      photoAsset: 'assets/images/siva_profile.png',
+      linkedIn: 'https://www.linkedin.com/in/siva-volety-108a44263');
 
   Map<String, Uri> get contacts {
     final result = <String, Uri>{};

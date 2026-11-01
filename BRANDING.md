@@ -7,15 +7,19 @@ separately; this change does not create domains or deploy anything.
 
 ## Creator profile
 
-Edit `lib/config/creator_profile.dart` in one place. Email, GitHub and LinkedIn
-are deliberately null until verified values are supplied; unconfigured or
-invalid entries are hidden. Website uses the supplied https://vasthu.ai domain.
+Edit `lib/config/creator_profile.dart` in one place. Email and GitHub remain
+unset; unconfigured or invalid entries are hidden.
+LinkedIn is configured as https://www.linkedin.com/in/siva-volety-108a44263.
+The Stay in Touch action uses that same centralized contact URL and opens
+externally. Website uses the supplied https://vasthu.ai domain.
 No creator social profile or email address was inferred from a repository URL.
 
-For a real approved photo, place it at `assets/images/siva_profile.jpg`, add
-that exact path under `flutter: assets:` in `pubspec.yaml`, and set `photoAsset`
-in `CreatorProfile.current`. Until then the UI shows a branded SV monogram,
-not an invented portrait. Missing configured images fall back safely.
+The production creator portrait is bundled at `assets/images/siva_profile.png`
+and declared in `pubspec.yaml`. `CreatorProfile.current.photoAsset` points to it.
+The approved 786 × 772 PNG is copied unchanged: no filters, retouching, or resizing.
+The rounded portrait uses `BoxFit.cover` without distortion and retains a branded
+SV fallback if the configured asset cannot load. Replace the file at the same
+path to update the photo; no contact or layout changes are required.
 
 ## Mark replacement
 

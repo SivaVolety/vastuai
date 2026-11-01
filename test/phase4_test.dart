@@ -53,7 +53,7 @@ void main() {
                 website: null)
             .contacts,
         isEmpty);
-    expect(CreatorProfile.current.contacts.keys, ['Website']);
+    expect(CreatorProfile.current.contacts.keys, ['LinkedIn', 'Website']);
   });
   test(
       'remedy uses one/multiple supplied directions and no default rule lookup',
@@ -149,7 +149,7 @@ void main() {
       expect(find.text('How VasthuAI was built'), findsOneWidget);
       expect(find.textContaining('Deterministic Vastu rules'), findsOneWidget);
       expect(find.text('GitHub'), findsNothing);
-      expect(find.text('LinkedIn'), findsNothing);
+      expect(find.text('LinkedIn'), findsOneWidget);
       expect(find.text('Email'), findsNothing);
       expect(tester.takeException(), isNull);
     });

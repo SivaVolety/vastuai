@@ -11,7 +11,7 @@ class CreatorPortrait extends StatelessWidget {
         image: true,
         label: profile.photoAsset == null
             ? '${profile.name}, creator. Profile photo not yet configured.'
-            : 'Portrait of ${profile.name}',
+            : 'Portrait of ${profile.name}, creator of VasthuAI',
         child: ExcludeSemantics(
             child: Container(
                 width: size,
