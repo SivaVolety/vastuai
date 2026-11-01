@@ -35,6 +35,25 @@ class RemedyDetails extends StatelessWidget {
             children: [
               Align(
                   alignment: Alignment.centerLeft,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (remedy.traditionalSignificance != null ||
+                            ruleSet == 'Vastu Presets') ...[
+                          const Text('Why this matters',
+                              style: VastuType.section),
+                          const SizedBox(height: VastuSpace.sm),
+                          Text(
+                              remedy.traditionalSignificance ??
+                                  'This recommendation follows the selected Vastu rule for this element.',
+                              style: VastuType.body),
+                          const SizedBox(height: VastuSpace.lg),
+                        ],
+                        const Text('Rule basis', style: VastuType.caption),
+                        const SizedBox(height: VastuSpace.sm),
+                      ])),
+              Align(
+                  alignment: Alignment.centerLeft,
                   child: Text('${remedy.basis}\nRule set: $ruleSet',
                       style: VastuType.small))
             ],

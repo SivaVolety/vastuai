@@ -67,6 +67,9 @@ class AnalysisSummaryService {
                       : null,
                   'rule_applied': finding.data['rule_applied'] != false,
                   'vastu_ok': finding.data['vastu_ok'] == true,
+                  if (finding.remedy?.traditionalSignificance != null)
+                    'traditional_significance':
+                        finding.remedy!.traditionalSignificance,
                   if (finding.allowedDirections != null)
                     'allowed_directions': finding.allowedDirections,
                 })

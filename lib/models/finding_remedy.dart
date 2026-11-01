@@ -23,9 +23,11 @@ class FindingRemedy {
       {required this.headline,
       required this.action,
       required this.basis,
-      required this.allowedDirections});
+      required this.allowedDirections,
+      this.traditionalSignificance});
   final String headline, action, basis;
   final List<String> allowedDirections;
+  final String? traditionalSignificance;
   static List<String>? snapshot(Map<String, dynamic> data) {
     final value = data['allowed_directions'];
     if (value is! List) return null;
@@ -42,6 +44,10 @@ class FindingRemedy {
     final directions = directionList(codes);
     return FindingRemedy(
         headline: 'Review $name placement',
+        traditionalSignificance: data['traditional_significance'] is String &&
+                (data['traditional_significance'] as String).trim().isNotEmpty
+            ? data['traditional_significance'] as String
+            : null,
         allowedDirections: codes,
         action: codes.isEmpty
             ? 'Review this placement according to the selected rule.'
