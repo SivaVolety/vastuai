@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img"><title>VasthuAI</title><desc>Simplified VasthuAI house, north compass and lotus.</desc><rect width="32" height="32" rx="7" fill="#183C36"/>
+<path d="M7 16 A10 10 0 0 1 25 16" fill="none" stroke="#C78A3B" stroke-width="2"/>
+<path d="M16 2 L20 10 L16 8 L12 10 Z" fill="#C78A3B"/>
+<path d="M4 19 L16 9 L28 19 L24 19 L16 12 L8 19 Z M8 19 H11 V26 H8 Z M21 19 H24 V26 H21 Z M14 16 H18 V20 H14 Z" fill="#F7F5F0"/>
+<path d="M7 28 Q10 24 14 27 Q12 23 16 21 Q20 23 18 27 Q22 24 25 28 Q21 27 16 30 Q11 27 7 28 Z" fill="#F7F5F0"/></svg>

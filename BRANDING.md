@@ -21,23 +21,45 @@ The rounded portrait uses `BoxFit.cover` without distortion and retains a brande
 SV fallback if the configured asset cannot load. Replace the file at the same
 path to update the photo; no contact or layout changes are required.
 
-## Mark replacement
+## Production logo system
 
-The single editable mark source is `web/icons/vastuai-mark.svg`.
-`BrandAssets.mark` in `lib/config/brand_assets.dart` points to that source;
-`VastuMark` renders it through the bundled SVG renderer. `web/index.html` also
-uses the same SVG as its scalable favicon. Keep the stable filenames when
-replacing the visual mark so references and deployed manifests stay compatible.
-The artwork is unchanged in Phase 4.
+The approved house / compass / lotus concept is recreated as flat vector paths,
+not embedded concept screenshots. The sources are:
 
-References: `web/index.html` uses `web/favicon.png` (32),
-`web/icons/favicon-16.png`, the SVG, and `Icon-192.png` for Apple touch.
-`web/manifest.json` uses `Icon-192.png`, `Icon-512.png`,
-`Icon-maskable-192.png` and `Icon-maskable-512.png`.
-Regenerate all PNG variants from the selected replacement SVG, with the maskable
-mark inside the central safe zone. Use a strong simple silhouette at 16px;
-avoid fine architectural details. Forest #183C36 and terracotta #D97757 remain
-current mark colors. No new final logo was introduced in Phase 4.
+- `assets/branding/vasthuai-logo.svg`: horizontal lockup for the navbar, shared
+  About header, drawer, and other compact branding surfaces.
+- `assets/branding/vasthuai-logo-stacked.svg`: stacked full logo for larger uses.
+- `assets/branding/vasthuai-icon.svg`: icon-only rounded-square mark.
+- `assets/branding/vasthuai-icon-maskable.svg`: solid-background icon with its
+  artwork contained within the central mask-safe circle.
+- `assets/branding/vasthuai-favicon.svg`: simplified small-size master.
 
-Replace the master SVG, then regenerate its PNG size variants. The in-app mark
-updates automatically from that same asset; no painter geometry needs editing.
+`BrandAssets` centralizes the Flutter asset references. `VastuLogo` provides one
+“VasthuAI” semantic image label; its SVG contents and standalone `VastuMark`
+instances are decorative. The navbar heights and surrounding layout are unchanged.
+The wordmark is outlined from the existing DM Serif Display font, whose OFL
+license is bundled at `assets/fonts/DMSerifDisplay-OFL.txt`; it needs no browser
+font fallback. “Vasthu” is forest green and “AI” is saffron.
+
+Production colors: forest `#183C36`, saffron `#C78A3B`, cream `#F7F5F0`.
+No texture, shadow, gradient, photograph, or remote image is embedded in the SVGs.
+
+## Web exports and replacement
+
+`web/icons/vasthuai-favicon.svg` is an exact copy of the small-size master.
+`web/favicon.png` is its 32px raster export and `web/icons/favicon-16.png` its
+16px export. The small variant retains a broad house silhouette, a single
+window, north needle, simplified compass arc, and solid lotus/base; diagonal
+needles, four-pane divisions, and petal cutouts are omitted at tiny sizes.
+
+`web/manifest.json` keeps stable paths to `Icon-192.png`, `Icon-512.png`,
+`Icon-maskable-192.png`, and `Icon-maskable-512.png`. Regular icons use the
+rounded-square master. Maskable icons use an opaque, full forest background
+and centrally inset artwork; let the host platform apply its own outer mask.
+`web/index.html` references the SVG and both favicon PNG sizes; the Apple touch
+icon uses `Icon-192.png`. Native launcher icons are not changed in this pass.
+
+To replace artwork, edit the master vectors, copy the favicon SVG to its web
+path, and rasterize the matching masters at their declared dimensions. Keep
+manifest filenames stable. Inspect the actual 16px and 32px pixels and a fresh
+browser profile after rebuilding, since old favicon caches can persist.

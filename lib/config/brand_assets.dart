@@ -1,5 +1,6 @@
-/// Shared master vector: bundled by Flutter and served directly as the web icon.
-/// Keep this filename stable when replacing the temporary mark.
+/// Local, outlined SVG artwork. All app placements share these production files.
 abstract final class BrandAssets {
-  static const mark = 'web/icons/vastuai-mark.svg';
+  static const logo = 'assets/branding/vasthuai-logo.svg';
+  static const stackedLogo = 'assets/branding/vasthuai-logo-stacked.svg';
+  static const mark = 'assets/branding/vasthuai-icon.svg';
 }
