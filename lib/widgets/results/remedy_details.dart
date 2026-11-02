@@ -16,14 +16,12 @@ class RemedyDetails extends StatelessWidget {
       Wrap(spacing: VastuSpace.xl, runSpacing: VastuSpace.md, children: [
         _Placement('Current placement', directionName(finding.direction)),
         _Placement(
-            'Recommended placement',
+            'Recommended zone',
             remedy.allowedDirections.isEmpty
                 ? 'Consult selected rule'
                 : directionList(remedy.allowedDirections)),
       ]),
       const SizedBox(height: VastuSpace.lg),
-      Text(remedy.action, style: VastuType.body),
-      const SizedBox(height: VastuSpace.sm),
       Material(
           color: Colors.transparent,
           child: ExpansionTile(
@@ -38,17 +36,14 @@ class RemedyDetails extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (remedy.traditionalSignificance != null ||
-                            ruleSet == 'Vastu Presets') ...[
-                          const Text('Why this matters',
-                              style: VastuType.section),
-                          const SizedBox(height: VastuSpace.sm),
-                          Text(
-                              remedy.traditionalSignificance ??
-                                  'This recommendation follows the selected Vastu rule for this element.',
-                              style: VastuType.body),
-                          const SizedBox(height: VastuSpace.lg),
-                        ],
+                        const Text('Why this matters',
+                            style: VastuType.section),
+                        const SizedBox(height: VastuSpace.sm),
+                        Text(
+                            remedy.traditionalSignificance ??
+                                'This placement does not match the selected rule for this element.',
+                            style: VastuType.body),
+                        const SizedBox(height: VastuSpace.lg),
                         const Text('Rule basis', style: VastuType.caption),
                         const SizedBox(height: VastuSpace.sm),
                       ])),
@@ -58,6 +53,13 @@ class RemedyDetails extends StatelessWidget {
                       style: VastuType.small))
             ],
           )),
+      const SizedBox(height: VastuSpace.md),
+      const Text('What you can do', style: VastuType.section),
+      const SizedBox(height: VastuSpace.sm),
+      Text(remedy.primaryAction, style: VastuType.body),
+      const SizedBox(height: VastuSpace.md),
+      Text(remedy.constraintNote(finding.data['label']?.toString() ?? ''),
+          style: VastuType.small),
     ]);
   }
 }

@@ -24,10 +24,42 @@ class FindingRemedy {
       required this.action,
       required this.basis,
       required this.allowedDirections,
-      this.traditionalSignificance});
+      this.traditionalSignificance,
+      this.itemName = 'item',
+      this.primaryActionText,
+      this.constraintNoteText});
   final String headline, action, basis;
+  final String itemName;
+  final String? primaryActionText, constraintNoteText;
   final List<String> allowedDirections;
   final String? traditionalSignificance;
+  // No direction ranking or severity is inferred from array order.
+  static const fixedElements = {
+    'stairs',
+    'main_entrance',
+    'door',
+    'window',
+    'windows',
+    'garage',
+    'sink',
+    'large_sink',
+    'small_sink',
+    'twin_sink',
+    'toilet',
+    'tub',
+    'laundry'
+  };
+  String get primaryAction =>
+      primaryActionText ??
+      (allowedDirections.isEmpty
+          ? 'Review this placement according to the selected rule before considering changes.'
+          : 'Review whether the $itemName can be placed within one of the allowed zones: ${directionList(allowedDirections)}.');
+  String constraintNote(String label) =>
+      constraintNoteText ??
+      (fixedElements.contains(label)
+          ? 'If relocation is impractical, treat this as a design constraint rather than a required renovation.'
+          : 'Make changes only if practical for your layout and how you use the space.');
+
   static List<String>? snapshot(Map<String, dynamic> data) {
     final value = data['allowed_directions'];
     if (value is! List) return null;
@@ -42,8 +74,17 @@ class FindingRemedy {
         .replaceAll('_', ' ')
         .toLowerCase();
     final directions = directionList(codes);
+    final evidence = data['remedy'];
+    String? supplied(String key) {
+      final value = evidence is Map ? evidence[key] : null;
+      return value is String && value.trim().isNotEmpty ? value : null;
+    }
+
     return FindingRemedy(
         headline: 'Review $name placement',
+        itemName: name,
+        primaryActionText: supplied('primary_action'),
+        constraintNoteText: supplied('constraint_note'),
         traditionalSignificance: data['traditional_significance'] is String &&
                 (data['traditional_significance'] as String).trim().isNotEmpty
             ? data['traditional_significance'] as String

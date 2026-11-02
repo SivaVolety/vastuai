@@ -175,7 +175,7 @@ void main() {
         findsOneWidget);
     expect(find.text('Generating enhanced summary…'), findsOneWidget);
     expect(find.text('Annotated Floor Plan'), findsOneWidget);
-    expect(find.text('Detailed Analysis'), findsOneWidget);
+    expect(find.text('Detailed Findings'), findsOneWidget);
     await tester.pumpWidget(page());
     await tester.pump();
     expect(service.requests, hasLength(1));

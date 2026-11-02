@@ -114,24 +114,30 @@ class _ResultPageState extends State<ResultPage> {
                   ? VastuSpace.page
                   : VastuSpace.xxl)
               : VastuSpace.lg;
-          final overview = AssessmentOverviewCard(analysis: analysis);
+          final overview = AssessmentOverviewCard(
+              key: const ValueKey('results-assessment'), analysis: analysis);
           final summary = AnalysisSummaryCard(
-              content: narrative, loading: _loading, onRetry: _retry);
+              key: const ValueKey('results-summary'),
+              content: narrative,
+              loading: _loading,
+              onRetry: _retry);
           final plan = AnnotatedPlanCard(
-              imageUrl: widget.imageUrl, localImagePath: widget.localImagePath);
+              key: const ValueKey('results-plan'),
+              imageUrl: widget.imageUrl,
+              localImagePath: widget.localImagePath);
           final strengths = ResultInsightsCard(
+              key: const ValueKey('results-strengths'),
               title: 'Key Strengths',
-              items: narrative.strengths,
+              items: analysis.localNarrative.strengths,
               emptyText: analysis.evaluated == 0
                   ? 'No favorable placements can be identified without evaluated findings.'
                   : 'No evaluated placements are favorable under the selected rules.',
               icon: Icons.check_circle_outline_rounded,
               positive: true);
-          final improvements = ResultRemediesCard(analysis: analysis);
+          final improvements = ResultRemediesCard(
+              key: const ValueKey('results-review'), analysis: analysis);
           final recommendations = RecommendationsCard(
-              content: narrative,
-              evaluated: analysis.evaluated,
-              analysis: analysis);
+              key: const ValueKey('results-actions'), analysis: analysis);
           return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(inset, 0, inset, VastuSpace.section),
             child: Center(
@@ -151,35 +157,26 @@ class _ResultPageState extends State<ResultPage> {
                             Navigator.pushReplacementNamed(context, '/');
                           }
                         }),
-                    if (desktop)
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                                flex: 5,
-                                child: _SectionStack(
-                                    children: [overview, summary, strengths])),
-                            const SizedBox(width: VastuSpace.xl),
-                            Expanded(
-                                flex: 6,
-                                child: _SectionStack(
-                                    children: [plan, recommendations])),
-                          ])
-                    else
-                      _SectionStack(children: [
-                        overview,
-                        summary,
-                        plan,
-                        strengths,
-                        improvements,
-                        recommendations
-                      ]),
-                    if (desktop) ...[
-                      const SizedBox(height: VastuSpace.xl),
-                      improvements
-                    ],
+                    overview,
+                    const SizedBox(height: VastuSpace.xl),
+                    _ResultsRow(
+                        key: const ValueKey('results-row-b'),
+                        columns: desktop,
+                        leftFlex: 6,
+                        rightFlex: 4,
+                        left: summary,
+                        right: plan),
+                    const SizedBox(height: VastuSpace.xl),
+                    _ResultsRow(
+                        key: const ValueKey('results-row-c'),
+                        columns: desktop,
+                        left: strengths,
+                        right: improvements),
+                    const SizedBox(height: VastuSpace.xl),
+                    recommendations,
                     const SizedBox(height: VastuSpace.xl),
                     DetailedFindings(
+                        key: const ValueKey('results-findings'),
                         analysis: analysis,
                         showConfidence: widget.showConfidence),
                   ]),
@@ -189,14 +186,28 @@ class _ResultPageState extends State<ResultPage> {
   }
 }
 
-class _SectionStack extends StatelessWidget {
-  const _SectionStack({required this.children});
-  final List<Widget> children;
+/// Explicit row boundaries: no independent vertical stacks or masonry reflow.
+class _ResultsRow extends StatelessWidget {
+  const _ResultsRow(
+      {super.key,
+      required this.columns,
+      required this.left,
+      required this.right,
+      this.leftFlex = 1,
+      this.rightFlex = 1});
+  final bool columns;
+  final Widget left, right;
+  final int leftFlex, rightFlex;
   @override
-  Widget build(BuildContext context) => Column(children: [
-        for (int i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(height: VastuSpace.xl),
-          children[i],
-        ],
-      ]);
+  Widget build(BuildContext context) => columns
+      ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(flex: leftFlex, child: left),
+          const SizedBox(width: VastuSpace.xl),
+          Expanded(flex: rightFlex, child: right),
+        ])
+      : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          left,
+          const SizedBox(height: VastuSpace.xl),
+          right,
+        ]);
 }

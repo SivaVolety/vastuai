@@ -3,7 +3,6 @@ import '../../models/results_analysis.dart';
 import '../../theme/vastu_theme.dart';
 import '../brand_components.dart';
 import 'result_status_pill.dart';
-import 'remedy_details.dart';
 import '../../models/finding_remedy.dart';
 
 class DetailedFindings extends StatefulWidget {
@@ -26,7 +25,7 @@ class _DetailedFindingsState extends State<DetailedFindings> {
         .where((entry) => _filter == null || entry.value.status == _filter);
     return BrandedCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Detailed Analysis', style: VastuType.title),
+      const Text('Detailed Findings', style: VastuType.title),
       const SizedBox(height: VastuSpace.sm),
       const Text(
           'The evidence behind your assessment. Expand a finding for details.',
@@ -167,10 +166,10 @@ class _FindingRowState extends State<_FindingRow> {
                     style: VastuType.small),
               Text('Model: ${widget.analysis.modelLabel}',
                   style: VastuType.small),
-              if (f.remedy != null) ...[
-                const SizedBox(height: VastuSpace.lg),
-                RemedyDetails(finding: f, ruleSet: widget.analysis.ruleSetName),
-              ] else if (f.allowedDirections != null &&
+              Text(
+                  'Rule applied: ${f.status == FindingStatus.notEvaluated ? 'No' : 'Yes'}',
+                  style: VastuType.small),
+              if (f.allowedDirections != null &&
                   f.allowedDirections!.isNotEmpty)
                 Text(
                     'Allowed directions: ${directionList(f.allowedDirections!)}',

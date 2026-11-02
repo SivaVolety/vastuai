@@ -76,16 +76,13 @@ void main() {
                       ruleSet: ruleSet)))));
       await tester.tap(find.text('Why?'));
       await tester.pumpAndSettle();
-      expect(find.text('Why this matters'),
-          ruleSet == 'Vastu Presets' ? findsOneWidget : findsNothing);
+      expect(find.text('Why this matters'), findsOneWidget);
       expect(find.text('Rule basis'), findsOneWidget);
       expect(find.textContaining('Agni'), findsNothing);
-      if (ruleSet == 'Vastu Presets') {
-        expect(
-            find.text(
-                'This recommendation follows the selected Vastu rule for this element.'),
-            findsOneWidget);
-      }
+      expect(
+          find.text(
+              'This placement does not match the selected rule for this element.'),
+          findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

@@ -185,10 +185,10 @@ void main() {
       expect(find.text('Analysis Summary'), findsOneWidget);
       expect(
           find.text(
-              'Consider repositioning the stove toward East if the layout allows.'),
+              'Review whether the stove can be placed within one of the allowed zones: East.'),
           findsWidgets);
       expect(find.text('North-West'), findsOneWidget);
-      expect(find.text('Recommended placement'), findsOneWidget);
+      expect(find.text('Recommended zone'), findsOneWidget);
       final why = find.text('Why?').first;
       await tester.ensureVisible(why);
       await tester.tap(why);

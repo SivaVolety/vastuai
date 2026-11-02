@@ -11,38 +11,64 @@ class AnalysisSummaryCard extends StatelessWidget {
   final bool loading;
   final VoidCallback? onRetry;
   @override
-  Widget build(BuildContext context) => BrandedCard(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-              content.isAiGenerated ? 'AI-Powered Summary' : 'Analysis Summary',
-              style: VastuType.title),
-          const SizedBox(height: VastuSpace.sm),
-          const Text('Based on your detected placements and selected rules',
-              style: VastuType.caption),
-          const SizedBox(height: VastuSpace.lg),
-          if (content.isAiGenerated) ...[
-            Text(content.headline, style: VastuType.section),
-            const SizedBox(height: VastuSpace.sm),
-          ],
-          Text(content.summary, style: VastuType.body),
-          if (loading) ...[
-            const SizedBox(height: VastuSpace.md),
-            const Text('Generating enhanced summary…',
-                style: VastuType.caption),
-          ],
-          if (content.disclaimer != null) ...[
-            const SizedBox(height: VastuSpace.md),
-            Text(content.disclaimer!, style: VastuType.caption),
-          ],
-          if (!loading && !content.isAiGenerated && onRetry != null) ...[
-            const SizedBox(height: VastuSpace.sm),
-            TextButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: const Text('Retry summary')),
-          ],
-        ],
-      ));
+  Widget build(BuildContext context) =>
+      LayoutBuilder(builder: (context, bounds) {
+        // Stable across loading, success and fallback. Long narratives scroll inside
+        // the same body rather than moving the plan or any following section.
+        final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+        final height =
+            (bounds.maxWidth < 360 ? 410.0 : 370.0) * scale.clamp(1, 1.8);
+        return BrandedCard(
+            child: SizedBox(
+                height: height,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                          height: 68 * scale,
+                          child: Align(
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                  content.isAiGenerated
+                                      ? 'AI-Powered Summary'
+                                      : 'Analysis Summary',
+                                  style: VastuType.title))),
+                      Expanded(
+                          child: SingleChildScrollView(
+                              key: const ValueKey('summary-narrative-viewport'),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (content.isAiGenerated)
+                                      Text(content.headline,
+                                          style: VastuType.section),
+                                    const SizedBox(height: VastuSpace.md),
+                                    Text(content.summary,
+                                        style: VastuType.body),
+                                    const SizedBox(height: VastuSpace.lg),
+                                    Text(
+                                        content.disclaimer ??
+                                            'Based on your detected placements and selected rules.',
+                                        style: VastuType.caption),
+                                  ]))),
+                      const SizedBox(height: VastuSpace.md),
+                      SizedBox(
+                          height: 56 * scale,
+                          child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: loading
+                                  ? const Text('Generating enhanced summary…',
+                                      style: VastuType.caption)
+                                  : !content.isAiGenerated && onRetry != null
+                                      ? TextButton.icon(
+                                          onPressed: onRetry,
+                                          icon: const Icon(
+                                              Icons.refresh_rounded,
+                                              size: 16),
+                                          label: const Text('Retry summary'))
+                                      : const Text(
+                                          'Generated from your Vastu analysis',
+                                          style: VastuType.caption))),
+                    ])));
+      });
 }

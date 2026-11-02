@@ -79,23 +79,25 @@ class _AnnotatedPlanCardState extends State<AnnotatedPlanCard> {
       const SizedBox(height: VastuSpace.lg),
       ClipRRect(
           borderRadius: BorderRadius.circular(VastuRadius.control),
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: ColoredBox(
-                color: VastuColors.canvas,
-                child: GestureDetector(
-                    onDoubleTap: () =>
-                        _controller.value.getMaxScaleOnAxis() <= 1
-                            ? _zoom(2.5)
-                            : _reset(),
-                    child: InteractiveViewer(
-                        transformationController: _controller,
-                        minScale: .5,
-                        maxScale: 5,
-                        panEnabled: true,
-                        clipBehavior: Clip.hardEdge,
-                        child: image))),
-          )),
+          child: LayoutBuilder(
+              builder: (context, bounds) => SizedBox(
+                    key: const ValueKey('annotated-plan-viewport'),
+                    height: (bounds.maxWidth * .8).clamp(200.0, 360.0),
+                    child: ColoredBox(
+                        color: VastuColors.canvas,
+                        child: GestureDetector(
+                            onDoubleTap: () =>
+                                _controller.value.getMaxScaleOnAxis() <= 1
+                                    ? _zoom(2.5)
+                                    : _reset(),
+                            child: InteractiveViewer(
+                                transformationController: _controller,
+                                minScale: .5,
+                                maxScale: 5,
+                                panEnabled: true,
+                                clipBehavior: Clip.hardEdge,
+                                child: image))),
+                  ))),
       const SizedBox(height: VastuSpace.md),
       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         IconButton(
